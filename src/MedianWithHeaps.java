@@ -1,44 +1,46 @@
 import java.util.Comparator;
-import java.util.List;
 import java.util.PriorityQueue;
 import java.util.Queue;
 
+/*
+    This is the implementation of sliding window with median.
+    Window contains values stored in two binary heaps - lowerHalf and higherHalf.
+    In my solution, I'm using PriorityQueue from Java Collection Framework which implements binary heap.
+    lowerHalf heap stores values from lower half of the window and is sorted in reversed order,
+    so the maximum value is on top.
+    higherHalf heap stores values from higher half and has the minimum value on top.
+    This allows me to always have access to the middle elements of the window, so the median can be calculated easily.
 
-public class MedianWithHeaps {
+    Time complexity:
+    n - size of the window
+    Add, poll - O(log(n))
+    Remove - O(n)
+    Peek - O(1)
 
-    private List<Integer> data;
-    private int windowSize;
+    In each iteration, values are added and removed from the heaps. This gives the algorithm O(n) complexity
+    in both worst and best case scenarios.
+ */
+
+public class MedianWithHeaps implements Median {
+
     private Queue<Integer> lowerHalf = new PriorityQueue<>(Comparator.reverseOrder());
     private Queue<Integer> higherHalf = new PriorityQueue<>();
 
-    public MedianWithHeaps(List<Integer> data, int windowSize) {
-        this.data = data;
-        this.windowSize = windowSize;
-    }
 
-    public void getMedianSlidingWindow() {
-        for (int i = 0; i < data.size(); i++) {
-            addToQueue(data.get(i));
-            if (i >= windowSize) {
-                removeFromQueue(data.get(i-windowSize));
-            }
-            printMedian();
-        }
-    }
-
-    private void addToQueue(int value) {
+    @Override
+    public void addDelay(int delay) {
         if (lowerHalf.isEmpty()) {
-            lowerHalf.add(value);
+            lowerHalf.add(delay);
             return;
         } else if (higherHalf.isEmpty()) {
-            higherHalf.add(value);
+            higherHalf.add(delay);
             return;
         }
 
-        if (value < lowerHalf.peek()) {
-            lowerHalf.add(value);
+        if (delay < lowerHalf.peek()) {
+            lowerHalf.add(delay);
         } else {
-            higherHalf.add(value);
+            higherHalf.add(delay);
         }
 
         if (!higherHalf.isEmpty() && !lowerHalf.isEmpty()) {
@@ -55,7 +57,7 @@ public class MedianWithHeaps {
         }
     }
 
-    private void removeFromQueue(int toRemove) {
+    public void removeDelay(int toRemove) {
         if (toRemove <= lowerHalf.peek()) {
             lowerHalf.remove(toRemove);
         } else {
@@ -63,20 +65,22 @@ public class MedianWithHeaps {
         }
     }
 
-    private void printMedian() {
+    @Override
+    public double getMedian() {
         int lhSize = lowerHalf.size();
         int hhSize = higherHalf.size();
+        double result;
         if (lhSize + hhSize == 1) {
-            System.out.println(-1);
-            return;
+            return -1.0;
         }
         if (lhSize > hhSize){
-            System.out.println((double) lowerHalf.peek());
+            result =  (double) lowerHalf.peek();
         } else if (lhSize == hhSize) {
-            System.out.println((double) (lowerHalf.peek() + higherHalf.peek())/2);
+            result =  (double) (lowerHalf.peek() + higherHalf.peek())/2;
         } else {
-            System.out.println((double) higherHalf.peek());
+            result = (double) higherHalf.peek();
         }
+        return result;
     }
 
     private void balanceQueues() {
